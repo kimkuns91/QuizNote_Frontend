@@ -3,8 +3,10 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import React, { useEffect, useState } from 'react';
 
-import TaskStatusTracker from '@/components/TaskStatusTracker';
 import { useTaskStore } from '@/store/taskStore';
+
+// import TaskStatusTracker from '@/components/TaskStatusTracker';
+
 
 export default function TaskStatusFloating() {
   const { taskId, taskStatus, isPolling } = useTaskStore();
@@ -69,7 +71,7 @@ export default function TaskStatusFloating() {
                 <path fillRule="evenodd" d="M4 9a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1z" clipRule="evenodd" />
               </svg>
             </button>
-            <TaskStatusTracker />
+            {/* <TaskStatusTracker /> */}
           </div>
         )}
       </motion.div>
