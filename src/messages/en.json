@@ -1,0 +1,65 @@
+{
+  "SignInForm": {
+    "startLogin": "Sign in to your account to continue",
+    "email": "Email",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "emailLogin": "Sign in with Email",
+    "or": "OR",
+    "googleLogin": "Sign in with Google",
+    "kakaoLogin": "Sign in with Kakao",
+    "signup": "Don't have an account?",
+    "signupLink": "Sign up",
+    "error": "An error occurred during login",
+    "success": "Login successful!",
+    "validation": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordRequired": "Password is required",
+      "passwordMinLength": "Password must be at least 6 characters",
+      "loginSuccess": "Login successful!",
+      "loginFailed": "Login failed",
+      "googleLoginFailed": "Google login failed",
+      "kakaoLoginFailed": "Kakao login failed",
+      "accountNotLinked": "This email is already registered with a different login method. Please use that method to sign in."
+    }
+  },
+  "SignUpForm": {
+    "title": "Create an Account",
+    "subtitle": "Sign up to get started with 해주세요",
+    "name": "Name",
+    "namePlaceholder": "Enter your name",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "signupButton": "Sign Up",
+    "or": "OR",
+    "googleLogin": "Sign up with Google",
+    "kakaoLogin": "Sign up with Kakao",
+    "alreadyHaveAccount": "Already have an account?",
+    "loginLink": "Log in",
+    "validation": {
+      "nameRequired": "Name is required",
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "passwordRequired": "Password is required",
+      "passwordMinLength": "Password must be at least 6 characters",
+      "confirmPasswordRequired": "Please confirm your password",
+      "passwordMatch": "Passwords must match",
+      "signupSuccess": "Account created successfully!",
+      "googleLoginFailed": "Google sign up failed",
+      "kakaoLoginFailed": "Kakao sign up failed"
+    }
+  },
+  "ForgotPasswordForm": {
+    "email": "Email",
+    "resetButton": "Send Reset Link",
+    "backToLogin": "Back to Login",
+    "validation": {
+      "emailRequired": "Email is required",
+      "emailInvalid": "Please enter a valid email address",
+      "resetEmailSent": "Password reset link has been sent to your email",
+      "resetFailed": "Failed to send password reset link"
+    }
+  }
+}

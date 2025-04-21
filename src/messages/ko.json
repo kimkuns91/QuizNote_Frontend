@@ -1,0 +1,65 @@
+{
+  "SignInForm": {
+    "startLogin": "계속하려면 계정에 로그인하세요",
+    "email": "이메일",
+    "password": "비밀번호",
+    "forgotPassword": "비밀번호를 잊으셨나요?",
+    "emailLogin": "이메일로 로그인",
+    "or": "또는",
+    "googleLogin": "Google로 로그인",
+    "kakaoLogin": "카카오로 로그인",
+    "signup": "계정이 없으신가요?",
+    "signupLink": "회원가입",
+    "error": "로그인 중 오류가 발생했습니다",
+    "success": "로그인 성공!",
+    "validation": {
+      "emailRequired": "이메일을 입력해주세요",
+      "emailInvalid": "유효한 이메일 주소를 입력해주세요",
+      "passwordRequired": "비밀번호를 입력해주세요",
+      "passwordMinLength": "비밀번호는 최소 6자 이상이어야 합니다",
+      "loginSuccess": "로그인 성공!",
+      "loginFailed": "로그인에 실패했습니다",
+      "googleLoginFailed": "Google 로그인에 실패했습니다",
+      "kakaoLoginFailed": "카카오 로그인에 실패했습니다",
+      "accountNotLinked": "이 이메일은 이미 다른 로그인 방식으로 가입되어 있습니다. 해당 방식으로 로그인해주세요."
+    }
+  },
+  "SignUpForm": {
+    "title": "계정 만들기",
+    "subtitle": "해주세요를 시작하려면 회원가입하세요",
+    "name": "이름",
+    "namePlaceholder": "이름을 입력하세요",
+    "email": "이메일",
+    "password": "비밀번호",
+    "confirmPassword": "비밀번호 확인",
+    "signupButton": "회원가입",
+    "or": "또는",
+    "googleLogin": "Google로 회원가입",
+    "kakaoLogin": "카카오로 회원가입",
+    "alreadyHaveAccount": "이미 계정이 있으신가요?",
+    "loginLink": "로그인",
+    "validation": {
+      "nameRequired": "이름을 입력해주세요",
+      "emailRequired": "이메일을 입력해주세요",
+      "emailInvalid": "유효한 이메일 주소를 입력해주세요",
+      "passwordRequired": "비밀번호를 입력해주세요",
+      "passwordMinLength": "비밀번호는 최소 6자 이상이어야 합니다",
+      "confirmPasswordRequired": "비밀번호를 확인해주세요",
+      "passwordMatch": "비밀번호가 일치하지 않습니다",
+      "signupSuccess": "계정이 성공적으로 생성되었습니다!",
+      "googleLoginFailed": "Google 회원가입에 실패했습니다",
+      "kakaoLoginFailed": "카카오 회원가입에 실패했습니다"
+    }
+  },
+  "ForgotPasswordForm": {
+    "email": "이메일",
+    "resetButton": "비밀번호 재설정 링크 받기",
+    "backToLogin": "로그인으로 돌아가기",
+    "validation": {
+      "emailRequired": "이메일을 입력해주세요",
+      "emailInvalid": "유효한 이메일 주소를 입력해주세요",
+      "resetEmailSent": "비밀번호 재설정 링크가 이메일로 전송되었습니다",
+      "resetFailed": "비밀번호 재설정 링크 전송에 실패했습니다"
+    }
+  }
+}

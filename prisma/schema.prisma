@@ -1,0 +1,263 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+generator client {
+  provider = "prisma-client-js"
+}
+model User {
+  id            String          @id @default(cuid())
+  name          String?
+  email         String          @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  mediaFiles    MediaFile[]     // 사용자가 업로드한 미디어 파일
+  lectures      Lecture[]       // 사용자의 강의
+  lectureNotes  LectureNote[]   // 사용자의 강의노트
+  quizzes       Quiz[]          // 사용자의 퀴즈
+  quizResults   QuizResult[]    // 사용자의 퀴즈 결과
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+ 
+  @@id([identifier, token])
+}
+
+// 강의 모델 (업로드된 미디어 파일이 처리되어 만들어지는 강의)
+model Lecture {
+  id              String         @id @default(cuid())
+  title           String         // 초기에는 "{날짜} 강의"로 설정
+  description     String?        @db.Text
+  processingStatus String        // 'pending', 'processing', 'completed', 'failed'
+  
+  // 모델 선택 옵션
+  selectedModel   String?        // 'whisper-small', 'whisper-medium', 'whisper-large' 등
+  selectedLanguage String?       // 선택 언어
+  useTranscriptEditing Boolean   @default(false) // LLM으로 스크립트 수정 옵션
+  
+  // 메타데이터
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  // 관계
+  userId          String
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // 연관된 미디어 파일
+  mediaFileId     String?
+  mediaFile       MediaFile?     @relation(fields: [mediaFileId], references: [id], onDelete: SetNull)
+  
+  // 강의 노트 및 퀴즈
+  lectureNote     LectureNote?
+  quiz            Quiz?
+}
+
+// 미디어 파일 모델 (오디오 또는 비디오)
+model MediaFile {
+  id          String   @id @default(cuid())
+  fileName    String   // 원본 파일 이름
+  fileSize    Int      // 파일 크기(바이트)
+  fileType    String   // 파일 타입(MIME 타입)
+  mediaType   String   // 'audio' 또는 'video'
+  s3Key       String   // S3에 저장된 파일 키
+  s3Url       String   // S3 URL
+  duration    Int?     // 미디어 길이(초)
+  
+  // STT 처리 결과
+  transcript  String?  @db.Text // 전체 텍스트
+  editedTranscript String? @db.Text // LLM으로 수정된 텍스트
+  
+  // 메타데이터
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 관계
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // 연결된 강의
+  lectures    Lecture[]
+}
+
+// 강의노트 모델
+model LectureNote {
+  id          String   @id @default(cuid())
+  title       String   // 강의노트 제목
+  content     String   @db.Text // 강의노트 내용
+  tags        String[] // 태그 목록
+  isPublic    Boolean  @default(false) // 공개 여부
+  
+  // 메타데이터
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 관계
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // 연관된 강의
+  lectureId   String   @unique // 각 강의는 하나의 강의노트만 가짐
+  lecture     Lecture  @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+  
+  // 섹션 관계
+  sections    NoteSection[]
+}
+
+// 강의노트 섹션 모델
+model NoteSection {
+  id          String   @id @default(cuid())
+  title       String   // 섹션 제목
+  content     String   @db.Text // 섹션 내용
+  order       Int      // 섹션 순서
+  
+  // 메타데이터
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 관계
+  noteId      String
+  lectureNote LectureNote @relation(fields: [noteId], references: [id], onDelete: Cascade)
+}
+
+// 퀴즈 모델
+model Quiz {
+  id          String   @id @default(cuid())
+  title       String   // 퀴즈 제목
+  description String?  // 퀴즈 설명
+  difficulty  String   // 난이도 (easy, medium, hard)
+  isPublic    Boolean  @default(false) // 공개 여부
+  
+  // 메타데이터
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 관계
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // 연관된 강의
+  lectureId   String   @unique // 각 강의는 하나의 퀴즈만 가짐
+  lecture     Lecture  @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+  
+  // 퀴즈 문제 관계
+  questions   QuizQuestion[]
+  
+  // 퀴즈 결과 관계
+  results     QuizResult[]
+}
+
+// 퀴즈 문제 모델
+model QuizQuestion {
+  id          String   @id @default(cuid())
+  question    String   @db.Text // 문제 내용
+  type        String   // 문제 유형 (multiple-choice, true-false, short-answer)
+  points      Int      @default(1) // 문제 점수
+  order       Int      // 문제 순서
+  
+  // 메타데이터
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 관계
+  quizId      String
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  
+  // 선택지와 정답 관계
+  options     QuestionOption[]
+  answers     UserAnswer[]
+}
+
+// 문제 선택지 모델
+model QuestionOption {
+  id          String   @id @default(cuid())
+  text        String   @db.Text // 선택지 내용
+  isCorrect   Boolean  // 정답 여부
+  order       Int      // 선택지 순서
+  
+  // 메타데이터
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 관계
+  questionId  String
+  question    QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+// 퀴즈 결과 모델
+model QuizResult {
+  id          String   @id @default(cuid())
+  score       Int      // 점수
+  totalPoints Int      // 총점
+  completedAt DateTime // 완료 시간
+  
+  // 메타데이터
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 관계
+  quizId      String
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // 사용자 답변 관계
+  answers     UserAnswer[]
+  
+  @@unique([quizId, userId, completedAt])
+}
+
+// 사용자 답변 모델
+model UserAnswer {
+  id          String   @id @default(cuid())
+  answer      String   @db.Text // 사용자 답변
+  isCorrect   Boolean  // 정답 여부
+  
+  // 메타데이터
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // 관계
+  questionId  String
+  question    QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  resultId    String
+  quizResult  QuizResult @relation(fields: [resultId], references: [id], onDelete: Cascade)
+}

@@ -1,0 +1,136 @@
+import { deleteLecture, getLecture, getLectures } from '@/actions/lectureActions';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
+import { toast } from 'react-hot-toast';
+
+export interface Lecture {
+  id: string;
+  title: string;
+  description: string | null;
+  userId: string;
+  mediaFileId: string | null;
+  processingStatus: string;
+  createdAt: Date;
+  updatedAt: Date;
+  mediaFile: {
+    id: string;
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+    mediaType: string;
+    s3Key: string;
+    s3Url: string;
+    duration: number | null;
+    transcript: string | null;
+    editedTranscript: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    userId: string;
+  } | null;
+  lectureNote: {
+    id: string;
+    content: string;
+    createdAt: Date;
+    updatedAt: Date;
+  } | null;
+  quiz: {
+    id: string;
+    title: string;
+    description: string | null;
+    difficulty: string;
+    isPublic: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    questions: {
+      id: string;
+      question: string;
+      type: string;
+      points: number;
+      order: number;
+      options: {
+        id: string;
+        text: string;
+        isCorrect: boolean;
+        order: number;
+      }[];
+    }[];
+  } | null;
+}
+
+// 강의 목록 조회 (인피니트 스크롤)
+export function useLectures() {
+  return useInfiniteQuery({
+    queryKey: ['lectures'],
+    queryFn: async ({ pageParam = 1 }) => {
+      const result = await getLectures(pageParam);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      return result;
+    },
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, _, lastPageParam) => {
+      return lastPage.hasMore ? Number(lastPageParam) + 1 : undefined;
+    },
+    staleTime: 0,
+    gcTime: 5 * 60 * 1000,
+  });
+}
+
+// 단일 강의 조회
+export function useLecture(lectureId: string) {
+  return useQuery<Lecture, Error>({
+    queryKey: ['lecture', lectureId],
+    queryFn: async () => {
+      const result = await getLecture(lectureId);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      return result.data;
+    },
+    refetchInterval: (query) => 
+      query.state.data?.processingStatus === 'processing' ? 3000 : false
+  });
+}
+
+// 강의 삭제 훅 추가
+export function useDeleteLecture() {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (lectureId: string) => {
+      const result = await deleteLecture(lectureId);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      return { id: lectureId };
+    },
+    onMutate: async (lectureId) => {
+      // 진행 중인 쿼리 취소
+      await queryClient.cancelQueries({ queryKey: ['lectures'] });
+      
+      // 이전 데이터 저장
+      const previousLectures = queryClient.getQueryData(['lectures']);
+      
+      // 낙관적 업데이트
+      queryClient.setQueryData(['lectures'], (old: Lecture[] | undefined) => {
+        if (!old) return [];
+        return old.filter(lecture => lecture.id !== lectureId);
+      });
+      
+      return { previousLectures };
+    },
+    onError: (error: Error, _, context) => {
+      // 에러 발생 시 이전 데이터로 복구
+      if (context?.previousLectures) {
+        queryClient.setQueryData(['lectures'], context.previousLectures);
+      }
+      toast.error(error.message);
+    },
+    onSuccess: () => {
+      // 성공 시 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: ['lectures'] });
+      toast.success('강의가 삭제되었습니다.');
+    },
+  });
+}

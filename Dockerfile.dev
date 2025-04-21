@@ -1,0 +1,23 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# 패키지 매니저 파일 복사
+COPY package.json yarn.lock* ./
+RUN yarn install --frozen-lockfile
+
+# Prisma 스키마 복사 및 클라이언트 생성
+COPY prisma ./prisma/
+RUN npx prisma generate
+
+# 나머지 코드 복사
+COPY . .
+
+# Next.js 애플리케이션 빌드
+RUN yarn build
+
+# 포트 노출
+EXPOSE 3000
+
+# 개발 모드로 실행
+CMD ["yarn", "dev"] 
