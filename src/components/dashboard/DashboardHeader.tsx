@@ -4,8 +4,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { RiBellLine, RiSearchLine } from 'react-icons/ri';
 
 import HeaderAuthSection from '@/components/layout/HeaderAuthSection';
-import TaskStatusTracker from '@/components/TaskStatusTracker';
 import { useTaskStore } from '@/store/taskStore';
+
+// import TaskStatusTracker from '@/components/TaskStatusTracker';
+
 
 const DashboardHeader = () => {
   // useTaskPolling 대신 직접 useTaskStore 사용
@@ -86,7 +88,7 @@ const DashboardHeader = () => {
             {/* 알림 드롭다운 */}
             {isNotificationOpen && (
               <div className="absolute right-0 mt-2 w-80 md:w-96 z-30 origin-top-right">
-                {taskId ? (
+                {/* {taskId ? (
                   <TaskStatusTracker />
                 ) : (
                   <div className="rounded-lg bg-white shadow-lg border border-gray-200 p-4">
@@ -94,7 +96,7 @@ const DashboardHeader = () => {
                       <p>진행 중인 작업이 없습니다.</p>
                     </div>
                   </div>
-                )}
+                )} */}
               </div>
             )}
           </div>
