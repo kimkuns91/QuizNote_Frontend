@@ -18,7 +18,7 @@ model User {
   lectureNotes  LectureNote[]   // 사용자의 강의노트
   quizzes       Quiz[]          // 사용자의 퀴즈
   quizResults   QuizResult[]    // 사용자의 퀴즈 결과
-
+  notionKeys    NotionKeys[]    // 사용자의 Notion 키
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -42,6 +42,16 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([provider, providerAccountId])
+}
+
+model NotionKeys {
+  id String @id @default(cuid())
+  token String
+  pageId String
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Session {
@@ -125,7 +135,8 @@ model LectureNote {
   content     String   @db.Text // 강의노트 내용
   tags        String[] // 태그 목록
   isPublic    Boolean  @default(false) // 공개 여부
-  
+  language    String   @default("ko") // 강의노트 언어
+
   // 메타데이터
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -165,7 +176,7 @@ model Quiz {
   description String?  // 퀴즈 설명
   difficulty  String   // 난이도 (easy, medium, hard)
   isPublic    Boolean  @default(false) // 공개 여부
-  
+  language    String   @default("ko") // 퀴즈 언어
   // 메타데이터
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

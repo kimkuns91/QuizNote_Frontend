@@ -103,10 +103,10 @@ const HeaderAuthSection = ({ className }: IHeaderAuthSectionProps) => {
             </DropdownMenuItem>
             <DropdownMenuItem
               className="cursor-pointer rounded-lg px-2 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
-              onClick={() => router.push('/my-documents')}
+              onClick={() => router.push('/dashboard')}
             >
               <RiFileList3Line className="mr-2 h-4 w-4 text-gray-500" />
-              <span>내 문서</span>
+              <span>대시보드</span>
             </DropdownMenuItem>
             <DropdownMenuItem
               className="cursor-pointer rounded-lg px-2 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
