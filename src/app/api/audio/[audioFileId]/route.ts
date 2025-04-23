@@ -1,6 +1,7 @@
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 
 import { NextResponse } from 'next/server';
+import { Readable } from 'stream';
 import { prisma } from '@/lib/prisma';
 
 // S3 클라이언트 초기화
@@ -68,11 +69,59 @@ export async function GET(
       }
 
       // 스트림을 바이트 배열로 변환
-      const chunks = [];
-      const stream = s3Response.Body as ReadableStream<Uint8Array>;
+      const chunks: Buffer[] = [];
       
-      for await (const chunk of stream) {
-        chunks.push(chunk);
+      // AWS SDK v3 응답 처리
+      const stream = s3Response.Body;
+      
+      // transformToByteArray 메서드가 있는지 확인
+      if (stream && 'transformToByteArray' in stream && typeof stream.transformToByteArray === 'function') {
+        // AWS SDK v3의 새로운 방식으로 바이트 배열로 변환
+        const byteArray = await stream.transformToByteArray();
+        chunks.push(Buffer.from(byteArray));
+      } 
+      // transformToString 메서드가 있는지 확인
+      else if (stream && 'transformToString' in stream && typeof stream.transformToString === 'function') {
+        const str = await stream.transformToString();
+        chunks.push(Buffer.from(str));
+      } 
+      // Node.js Readable 스트림인지 확인
+      else if (stream instanceof Readable) {
+        await new Promise<void>((resolve, reject) => {
+          (stream as Readable).on('data', (chunk: Buffer) => chunks.push(chunk));
+          (stream as Readable).on('end', () => resolve());
+          (stream as Readable).on('error', (err: Error) => reject(err));
+        });
+      } 
+      // Blob 타입인지 확인 (브라우저 환경에서 사용)
+      else if (typeof Blob !== 'undefined' && stream instanceof Blob) {
+        const arrayBuffer = await (stream as Blob).arrayBuffer();
+        chunks.push(Buffer.from(arrayBuffer));
+      }
+      else {
+        // 다른 모든 경우에 대한 폴백 - 가장 공통적인 메서드 시도
+        try {
+          console.log('일반적인 스트림 처리 시도, 타입:', typeof stream);
+          
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const anyStream = stream as any;
+          
+          if (anyStream.transformToByteArray) {
+            const byteArray = await anyStream.transformToByteArray();
+            chunks.push(Buffer.from(byteArray));
+          } else if (anyStream.transformToString) {
+            const str = await anyStream.transformToString();
+            chunks.push(Buffer.from(str));
+          } else if (anyStream.Body && typeof anyStream.Body.transformToByteArray === 'function') {
+            const byteArray = await anyStream.Body.transformToByteArray();
+            chunks.push(Buffer.from(byteArray));
+          } else {
+            throw new Error('지원되지 않는 스트림 형식');
+          }
+        } catch (streamError) {
+          console.error('스트림 처리 중 오류:', streamError);
+          throw new Error(`스트림을 처리할 수 없습니다: ${streamError instanceof Error ? streamError.message : String(streamError)}`);
+        }
       }
       
       const audioBuffer = Buffer.concat(chunks);
@@ -136,10 +185,11 @@ export async function GET(
         status: 200,
         headers: headers,
       });
-    } catch (s3Error) {
+    } catch (s3Error: unknown) {
       console.error('S3 파일 다운로드 오류:', s3Error);
+      const errorMessage = s3Error instanceof Error ? s3Error.message : '알 수 없는 오류';
       return NextResponse.json(
-        { error: `S3에서 파일을 가져오는 중 오류가 발생했습니다: ${s3Error.message}` },
+        { error: `S3에서 파일을 가져오는 중 오류가 발생했습니다: ${errorMessage}` },
         { status: 500 }
       );
     }

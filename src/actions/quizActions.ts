@@ -57,6 +57,17 @@ export async function getQuizzes(): Promise<{ success: true; data: IQuiz[] } | {
         // 응답한 질문의 ID 목록
         const answeredQuestionIds = quizAnswers.map(a => a.questionId);
         
+        // 맞은 문제 수 계산
+        const correctAnswers = quizAnswers.filter(a => a.isCorrect).length;
+        
+        // 총 문제 수
+        const totalQuestions = quiz.questions.length;
+        
+        // 맞은 문제 수 / 총 문제 수 * 100으로 점수 계산
+        const calculatedScore = totalQuestions > 0 
+          ? Math.round((correctAnswers / totalQuestions) * 100) 
+          : 0;
+        
         return {
           id: quiz.id,
           title: quiz.title,
@@ -66,7 +77,9 @@ export async function getQuizzes(): Promise<{ success: true; data: IQuiz[] } | {
           createdAt: quiz.createdAt,
           updatedAt: quiz.updatedAt,
           // 퀴즈 결과가 있으면 점수 추가 (0-100점 기준)
-          score: quizResult?.score,
+          score: quizResult ? calculatedScore : undefined,
+          // 총 문제 수를 totalPoints로 저장
+          totalPoints: totalQuestions,
           questions: quiz.questions.map(q => ({
             id: q.id,
             question: q.question,
@@ -139,6 +152,17 @@ export async function getQuiz(quizId: string): Promise<{ success: true; data: IQ
     
     // 응답한 질문의 ID 목록
     const answeredQuestionIds = quizResult?.answers.map(a => a.questionId) || [];
+    
+    // 맞은 문제 수 계산
+    const correctAnswers = quizResult?.answers.filter(a => a.isCorrect).length || 0;
+    
+    // 총 문제 수
+    const totalQuestions = quiz.questions.length;
+    
+    // 맞은 문제 수 / 총 문제 수 * 100으로 점수 계산
+    const calculatedScore = totalQuestions > 0 
+      ? Math.round((correctAnswers / totalQuestions) * 100) 
+      : 0;
 
     // IQuiz 타입에 맞게 데이터 변환
     const formattedQuiz: IQuiz = {
@@ -150,7 +174,9 @@ export async function getQuiz(quizId: string): Promise<{ success: true; data: IQ
       createdAt: quiz.createdAt,
       updatedAt: quiz.updatedAt,
       // 결과가 있으면 점수 추가
-      score: quizResult?.score,
+      score: quizResult ? calculatedScore : undefined,
+      // 총 문제 수를 totalPoints로 저장
+      totalPoints: totalQuestions,
       questions: quiz.questions.map(q => ({
         id: q.id,
         question: q.question,
@@ -205,9 +231,8 @@ export async function submitQuizResult(
     }
 
     // 정답 확인 및 점수 계산
-    let score = 0;
-    const totalPoints = quiz.questions.reduce((sum, q) => sum + q.points, 0);
     const userAnswers = [];
+    let correctCount = 0;
 
     for (const answer of answers) {
       const question = quiz.questions.find(q => q.id === answer.questionId);
@@ -218,7 +243,7 @@ export async function submitQuizResult(
       );
 
       if (isCorrect) {
-        score += question.points;
+        correctCount++;
       }
 
       userAnswers.push({
@@ -228,14 +253,17 @@ export async function submitQuizResult(
       });
     }
 
-    // 백분율로 점수 변환 (0-100점 기준)
-    const normalizedScore = totalPoints > 0 ? Math.round((score / totalPoints) * 100) : 0;
+    // 맞은 문제 수 / 총 문제 수 * 100으로 점수 계산
+    const totalQuestions = quiz.questions.length;
+    const normalizedScore = totalQuestions > 0 
+      ? Math.round((correctCount / totalQuestions) * 100) 
+      : 0;
 
     // 퀴즈 결과 저장
     const result = await prisma.quizResult.create({
       data: {
         score: normalizedScore, // 100점 만점 기준 점수 저장
-        totalPoints,
+        totalPoints: totalQuestions, // 총 문제 수 저장
         completedAt: new Date(),
         quizId,
         userId: session.user.id,
@@ -257,7 +285,7 @@ export async function submitQuizResult(
       data: {
         id: result.id,
         score: normalizedScore, // 100점 만점 기준 점수 반환
-        totalPoints,
+        totalPoints: totalQuestions, // 총 문제 수 반환
         completedAt: result.completedAt,
         answers: result.answers.map(a => ({
           questionId: a.questionId,

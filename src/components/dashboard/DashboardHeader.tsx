@@ -1,9 +1,12 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { RiBellLine, RiSearchLine } from 'react-icons/ri';
 
 import HeaderAuthSection from '@/components/layout/HeaderAuthSection';
+import { ISearchResult } from '@/components/dashboard/SearchResults';
+import { RiBellLine } from 'react-icons/ri';
+import Search from '@/components/dashboard/Search';
+import { useRouter } from 'next/navigation';
 import { useTaskStore } from '@/store/taskStore';
 
 // import TaskStatusTracker from '@/components/TaskStatusTracker';
@@ -14,6 +17,7 @@ const DashboardHeader = () => {
   const { taskId, taskStatus, isPolling } = useTaskStore();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   
   // 상태 변경 로깅
   useEffect(() => {
@@ -52,23 +56,29 @@ const DashboardHeader = () => {
     }
   };
   
+  // 검색 처리 함수
+  const handleSearch = (query: string) => {
+    console.log('검색어:', query);
+    // 검색 API 호출 또는 다른 로직을 추가할 수 있음
+  };
+  
+  // 검색 결과 클릭 처리
+  const handleSearchResultClick = (result: ISearchResult) => {
+    console.log('검색 결과 클릭:', result);
+    // 클릭된 결과에 따라 페이지 이동
+    if (result.path) {
+      router.push(result.path);
+    }
+  };
+  
   return (
     <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-sm">
       <div className="flex items-center justify-between px-6 py-3">
         <div className="flex items-center space-x-4">
-          <div className="relative rounded-md">
-            <input
-              type="text"
-              placeholder="파일 또는 문서 검색"
-              className="w-80 rounded-full border border-gray-300 py-2 pl-10 pr-4 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
-            />
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <RiSearchLine className="h-4 w-4 text-gray-400" />
-            </div>
-            <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-              <span className="rounded-sm bg-gray-100 px-1.5 py-0.5 text-xs text-gray-500">⌘K</span>
-            </div>
-          </div>
+          <Search 
+            onSearch={handleSearch} 
+            onResultClick={handleSearchResultClick}
+          />
         </div>
 
         <div className="flex items-center space-x-4">

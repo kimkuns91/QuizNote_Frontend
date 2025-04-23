@@ -174,10 +174,10 @@ export default function QuizResultPage({ params }: PageProps) {
               <div className="text-center mb-4 md:mb-0">
                 <h3 className="text-2xl font-bold mb-1">최종 점수</h3>
                 <div className={`text-4xl font-bold ${resultColor}`}>
-                  {result.score} / {result.totalPoints}
+                  {result.score} / 100
                 </div>
                 <p className="text-gray-500 mt-1">
-                  ({Math.round(scorePercentage)}%)
+                  ({Math.round(result.score / 100 * result.totalPoints)} / {result.totalPoints} 문제 정답)
                 </p>
               </div>
               

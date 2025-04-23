@@ -25,6 +25,7 @@ export interface IQuiz {
   difficulty: 'easy' | 'medium' | 'hard';
   isPublic: boolean;
   score?: number;
+  totalPoints?: number;
   createdAt: Date;
   updatedAt: Date;
   questions: IQuizQuestion[];

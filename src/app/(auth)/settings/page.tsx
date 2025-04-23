@@ -4,6 +4,9 @@ import NotionKeyForm from '@/components/settings/NotionKeyForm';
 import { Suspense } from 'react';
 import { getNotionKey } from '@/actions/userActions';
 
+// 동적 렌더링 설정
+export const dynamic = 'force-dynamic';
+
 // 설정 페이지 메인 컴포넌트
 export default function SettingsPage() {
   return (

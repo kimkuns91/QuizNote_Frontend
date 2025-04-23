@@ -34,10 +34,6 @@ export default function QuizPage() {
   const [activeTab, setActiveTab] = useState('all');
   const { data: quizzes, isLoading, isError } = useQuizzes();
 
-  const handleQuizClick = (quizId: string) => {
-    router.push(`/quiz/${quizId}`);
-  };
-
   const filteredQuizzes = quizzes?.filter((quiz) => {
     if (activeTab === 'all') return true;
     if (activeTab === 'completed') return quiz.questions.every(q => q.isAnswered);
@@ -185,13 +181,18 @@ export default function QuizPage() {
             <motion.button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 text-sm font-medium ${
-                activeTab === tab.id
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-white text-gray-600 hover:bg-gray-50'
-              }`}
-              whileHover={activeTab !== tab.id ? { backgroundColor: "rgb(249 250 251)" } : {}}
+              className="px-4 py-2 text-sm font-medium"
+              initial={false}
+              animate={{
+                backgroundColor: activeTab === tab.id ? '#4f46e5' : '#ffffff',
+                color: activeTab === tab.id ? '#ffffff' : '#4b5563',
+              }}
               whileTap={{ scale: 0.95 }}
+              whileHover={
+                activeTab !== tab.id
+                  ? { backgroundColor: '#f9fafb' }
+                  : {}
+              }
             >
               {tab.label}
             </motion.button>
@@ -247,8 +248,7 @@ export default function QuizPage() {
           <motion.div
             key={quiz.id}
             variants={item}
-            className="flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md cursor-pointer"
-            onClick={() => handleQuizClick(quiz.id)}
+            className="flex flex-col overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-shadow hover:shadow-md"
             whileHover={{ 
               scale: 1.02, 
               y: -5, 
@@ -277,14 +277,14 @@ export default function QuizPage() {
                     {quiz.questions.every(q => q.isAnswered) ? '완료' : '미완료'}
                   </span>
                 </div>
-                {quiz.score !== undefined && (
+                {quiz.score !== undefined && quiz.totalPoints !== undefined && (
                   <div className="flex items-center text-sm">
                     {quiz.score >= 70 ? (
                       <RiCheckboxCircleLine className="mr-2 h-4 w-4 text-green-500" />
                     ) : (
                       <RiCloseCircleLine className="mr-2 h-4 w-4 text-red-500" />
                     )}
-                    <span className="font-medium text-gray-700">점수: {quiz.score}점</span>
+                    <span className="font-medium text-gray-700">점수: {quiz.score}점 ({Math.round(quiz.score / 100 * quiz.totalPoints)}/{quiz.totalPoints})</span>
                   </div>
                 )}
               </div>
@@ -295,10 +295,7 @@ export default function QuizPage() {
                       className="rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/quiz/${quiz.id}/result`);
-                      }}
+                      onClick={() => router.push(`/quiz/${quiz.id}/result`)}
                     >
                       결과 확인
                     </motion.button>
@@ -306,10 +303,7 @@ export default function QuizPage() {
                       className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        router.push(`/quiz/${quiz.id}?restart=true`);
-                      }}
+                      onClick={() => router.push(`/quiz/${quiz.id}?restart=true`)}
                     >
                       다시 풀기
                     </motion.button>
@@ -319,7 +313,7 @@ export default function QuizPage() {
                     className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={() => router.push(`/quiz/${quiz.id}`)}
                   >
                     시작하기
                   </motion.button>
