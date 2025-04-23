@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { RiKakaoTalkFill } from 'react-icons/ri';
 import { cn } from '@/lib/utils';
-import { loginWithKakao } from '@/actions/auth';
+import { loginWithKakao } from '@/actions/authActions';
 import { motion } from 'framer-motion';
 // import { signIn } from '@/lib/auth';
 import { useState } from 'react';

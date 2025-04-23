@@ -1,11 +1,11 @@
 'use client';
 
-import { RiArrowLeftLine, RiDeleteBin6Line, RiEdit2Line } from 'react-icons/ri';
+import { RiArrowLeftLine, RiBookmarkLine, RiDeleteBin6Line, RiEdit2Line } from 'react-icons/ri';
 import { useDeleteLectureNote, useLectureNote } from '@/hooks/useLectureNotes';
 
+import AudioPlayer from '@/components/audio/AudioPlayer';
 import ReactMarkdown from 'react-markdown';
-import { format } from 'date-fns';
-import { ko } from 'date-fns/locale';
+import { formatDate } from '@/lib/date';
 import remarkGfm from 'remark-gfm';
 import { toast } from 'react-hot-toast';
 import { useParams } from 'next/navigation'
@@ -33,8 +33,8 @@ export default function NoteDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="text-center">
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center flex flex-col items-center justify-center">
           <div className="mb-4 h-12 w-12 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
           <p className="text-gray-600">강의노트를 불러오는 중...</p>
         </div>
@@ -44,7 +44,7 @@ export default function NoteDetailPage() {
 
   if (isError || !note) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <div className="mb-4 flex justify-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
@@ -76,45 +76,61 @@ export default function NoteDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen">
+      <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
         {/* 헤더 */}
-        <div className="mb-12">
-          <button
-            onClick={() => router.back()}
-            className="mb-6 flex items-center text-gray-600 transition-colors hover:text-gray-800"
-          >
-            <RiArrowLeftLine className="mr-2 h-5 w-5" />
-            뒤로가기
-          </button>
-          
-          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">{note.title}</h1>
-              <p className="mt-2 text-sm text-gray-500">
-                {format(new Date(note.updatedAt), 'PPP', { locale: ko })}
-              </p>
-            </div>
+        <div className="mb-10">
+          <div className="mb-6 flex items-center justify-between">
+            <button
+              onClick={() => router.back()}
+              className="flex items-center text-gray-600 transition-colors hover:text-gray-800"
+            >
+              <RiArrowLeftLine className="mr-2 h-5 w-5" />
+              <span className="text-sm font-medium">뒤로가기</span>
+            </button>
             
-            <div className="flex gap-3">
+            <div className="flex space-x-3">
               <button
                 onClick={() => router.push(`/notes/${note.id}/edit`)}
-                className="flex items-center rounded-lg bg-blue-500 px-4 py-2 text-white transition-colors hover:bg-blue-600"
+                className="rounded-full p-2 text-gray-500 bg-white shadow-sm hover:bg-blue-50 hover:text-blue-500 transition-all"
+                aria-label="노트 수정"
               >
-                <RiEdit2Line className="mr-2 h-5 w-5" />
-                수정
+                <RiEdit2Line size={18} />
               </button>
               <button
                 onClick={handleDelete}
                 disabled={isDeleting}
-                className="flex items-center rounded-lg bg-red-500 px-4 py-2 text-white transition-colors hover:bg-red-600 disabled:opacity-50"
+                className="rounded-full p-2 text-gray-500 bg-white shadow-sm hover:bg-red-50 hover:text-red-500 transition-all disabled:opacity-50"
+                aria-label="노트 삭제"
               >
-                <RiDeleteBin6Line className="mr-2 h-5 w-5" />
-                삭제
+                <RiDeleteBin6Line size={18} />
               </button>
             </div>
           </div>
+          
+          <div className="relative overflow-hidden rounded-xl border-l-4 border-l-indigo-500 border-r border-t border-b border-gray-200 bg-white p-6 shadow-md">
+            <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-indigo-50 opacity-40"></div>
+            <div className="relative">
+              <div className="flex items-center">
+                <RiBookmarkLine className="mr-3 h-5 w-5 text-indigo-500" />
+                <h1 className="text-2xl font-bold text-gray-800 tracking-tight">{note.title}</h1>
+              </div>
+              <p className="mt-2 text-sm text-gray-500 font-light">
+                {formatDate(note.updatedAt)}
+              </p>
+            </div>
+          </div>
         </div>
+
+        {/* 미디어 플레이어 - 연결된 강의에 오디오 파일이 있는 경우 */}
+        {note.lecture?.mediaFile && (
+          <div className="mb-8">
+            <AudioPlayer 
+              audioFileId={note.lecture.mediaFile.id} 
+              fileName={note.lecture.mediaFile.fileName} 
+            />
+          </div>
+        )}
 
         {/* 태그 */}
         {note.tags && note.tags.length > 0 && (
@@ -122,7 +138,7 @@ export default function NoteDetailPage() {
             {note.tags.map((tag, index) => (
               <span
                 key={index}
-                className="rounded-full bg-blue-100 px-4 py-1 text-sm font-medium text-blue-800"
+                className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-600 shadow-sm transition-transform hover:scale-105"
               >
                 {tag}
               </span>
@@ -131,17 +147,24 @@ export default function NoteDetailPage() {
         )}
 
         {/* 내용 */}
-        <div className="mb-12 rounded-lg bg-white p-6 shadow-sm">
-          <div className="prose prose-lg max-w-none">
+        <div className="mb-10 rounded-xl border-l-4 border-l-indigo-300 border-t border-r border-b border-gray-200 bg-white p-7 shadow-md">
+          <div className="prose prose-lg max-w-none prose-headings:text-gray-800 prose-p:text-gray-700 prose-p:leading-relaxed prose-a:text-indigo-600">
             <ReactMarkdown 
               remarkPlugins={[remarkGfm]}
               components={{
-                h1: ({...props}) => <h1 className="text-3xl font-bold my-4" {...props} />,
-                h2: ({...props}) => <h2 className="text-2xl font-bold my-3" {...props} />,
-                h3: ({...props}) => <h3 className="text-xl font-bold my-2" {...props} />,
-                h4: ({...props}) => <h4 className="text-lg font-bold my-2" {...props} />,
-                h5: ({...props}) => <h5 className="text-base font-bold my-1" {...props} />,
-                h6: ({...props}) => <h6 className="text-sm font-bold my-1" {...props} />
+                h1: ({...props}) => <h1 className="text-2xl font-bold my-5 border-b border-gray-100 pb-2" {...props} />,
+                h2: ({...props}) => <h2 className="text-xl font-bold my-4 text-indigo-800" {...props} />,
+                h3: ({...props}) => <h3 className="text-lg font-bold my-3 text-gray-800" {...props} />,
+                h4: ({...props}) => <h4 className="text-base font-bold my-2 text-gray-700" {...props} />,
+                h5: ({...props}) => <h5 className="text-sm font-bold my-1 text-gray-700" {...props} />,
+                h6: ({...props}) => <h6 className="text-xs font-bold my-1 text-gray-700" {...props} />,
+                ul: ({...props}) => <ul className="list-disc pl-6 my-4 space-y-2" {...props} />,
+                ol: ({...props}) => <ol className="list-decimal pl-6 my-4 space-y-2" {...props} />,
+                li: ({...props}) => <li className="my-1" {...props} />,
+                p: ({...props}) => <p className="my-3 text-gray-700 leading-relaxed" {...props} />,
+                blockquote: ({...props}) => <blockquote className="border-l-4 border-l-indigo-200 pl-4 italic my-4 text-gray-600 bg-gray-50 py-2 rounded-r-sm" {...props} />,
+                code: ({...props}) => <code className="bg-gray-50 text-indigo-600 px-1 py-0.5 rounded text-sm font-mono" {...props} />,
+                pre: ({...props}) => <pre className="bg-gray-800 text-gray-50 p-4 rounded-md my-4 overflow-x-auto" {...props} />,
               }}
             >
               {note.content}
@@ -152,26 +175,31 @@ export default function NoteDetailPage() {
         {/* 섹션 */}
         {note.sections && note.sections.length > 0 && (
           <div className="space-y-8">
-            <h2 className="text-2xl font-bold text-gray-900">섹션</h2>
-            <div className="space-y-6">
+            <h2 className="text-xl font-bold text-gray-800 border-b border-gray-200 pb-2">섹션</h2>
+            <div className="space-y-8">
               {note.sections.map((section) => (
                 <div 
                   key={section.id} 
-                  className="rounded-lg bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+                  className="rounded-xl border-l-4 border-l-amber-400 border-t border-r border-b border-gray-200 bg-white p-6 shadow-md transition-all hover:shadow-lg"
                 >
-                  <h3 className="mb-4 text-xl font-semibold text-gray-900">
+                  <h3 className="mb-4 text-lg font-semibold text-gray-800">
                     {section.title}
                   </h3>
-                  <div className="prose prose-lg max-w-none">
+                  <div className="prose prose-base max-w-none prose-p:leading-relaxed prose-p:text-gray-700">
                     <ReactMarkdown 
                       remarkPlugins={[remarkGfm]}
                       components={{
-                        h1: ({...props}) => <h1 className="text-3xl font-bold my-4" {...props} />,
-                        h2: ({...props}) => <h2 className="text-2xl font-bold my-3" {...props} />,
-                        h3: ({...props}) => <h3 className="text-xl font-bold my-2" {...props} />,
-                        h4: ({...props}) => <h4 className="text-lg font-bold my-2" {...props} />,
-                        h5: ({...props}) => <h5 className="text-base font-bold my-1" {...props} />,
-                        h6: ({...props}) => <h6 className="text-sm font-bold my-1" {...props} />
+                        h1: ({...props}) => <h1 className="text-xl font-bold my-3 text-amber-800" {...props} />,
+                        h2: ({...props}) => <h2 className="text-lg font-bold my-2 text-amber-700" {...props} />,
+                        h3: ({...props}) => <h3 className="text-base font-bold my-2 text-gray-800" {...props} />,
+                        h4: ({...props}) => <h4 className="text-sm font-bold my-1 text-gray-700" {...props} />,
+                        h5: ({...props}) => <h5 className="text-xs font-bold my-1 text-gray-700" {...props} />,
+                        h6: ({...props}) => <h6 className="text-xs font-bold my-1 text-gray-700" {...props} />,
+                        ul: ({...props}) => <ul className="list-disc pl-5 my-3 space-y-1" {...props} />,
+                        ol: ({...props}) => <ol className="list-decimal pl-5 my-3 space-y-1" {...props} />,
+                        li: ({...props}) => <li className="my-1" {...props} />,
+                        p: ({...props}) => <p className="my-2 text-gray-700 leading-relaxed" {...props} />,
+                        blockquote: ({...props}) => <blockquote className="border-l-4 border-l-amber-200 pl-4 italic my-4 text-gray-600 bg-amber-50 py-1 rounded-r-sm" {...props} />,
                       }}
                     >
                       {section.content}

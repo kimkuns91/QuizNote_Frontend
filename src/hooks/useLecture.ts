@@ -1,4 +1,4 @@
-import { deleteLecture, getLecture, getLectures } from '@/actions/lectureActions';
+import { deleteLecture, getLecture, getLectures, updateLecture } from '@/actions/lectureActions';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { toast } from 'react-hot-toast';
@@ -131,6 +131,29 @@ export function useDeleteLecture() {
       // 성공 시 캐시 무효화
       queryClient.invalidateQueries({ queryKey: ['lectures'] });
       toast.success('강의가 삭제되었습니다.');
+    },
+  });
+}
+
+// 강의 업데이트 훅
+export function useUpdateLecture(lectureId: string) {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (data: { title?: string; description?: string }) => {
+      const result = await updateLecture(lectureId, data);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      return result.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['lectures'] });
+      queryClient.invalidateQueries({ queryKey: ['lecture', lectureId] });
+      toast.success('강의가 업데이트되었습니다.');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 }

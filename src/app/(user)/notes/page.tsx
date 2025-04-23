@@ -208,9 +208,10 @@ export default function NotesPage() {
           {notes.map((note) => (
             <motion.div
               key={note.id}
-              className="flex flex-col rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+              className="flex flex-col rounded-lg border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md cursor-pointer"
               variants={item}
               whileHover={{ y: -5, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1)" }}
+              onClick={() => handleViewNote(note.id)}
             >
               <div className="mb-3 flex justify-between">
                 <div className="flex items-center">
@@ -245,9 +246,12 @@ export default function NotesPage() {
                   <span className="text-xs text-gray-500">
                     {format(new Date(note.updatedAt), 'PPP', { locale: ko })}
                   </span>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2" onClick={e => e.stopPropagation()}>
                     <motion.button
-                      onClick={() => handleEditNote(note.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditNote(note.id);
+                      }}
                       className="rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-blue-500"
                       whileHover={{ scale: 1.2 }}
                       whileTap={{ scale: 0.9 }}
@@ -255,15 +259,10 @@ export default function NotesPage() {
                       <RiEdit2Line />
                     </motion.button>
                     <motion.button
-                      onClick={() => handleViewNote(note.id)}
-                      className="rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-green-500"
-                      whileHover={{ scale: 1.2 }}
-                      whileTap={{ scale: 0.9 }}
-                    >
-                      <RiFileListLine />
-                    </motion.button>
-                    <motion.button
-                      onClick={() => handleDeleteNote(note.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteNote(note.id);
+                      }}
                       className="rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-red-500"
                       disabled={isDeleting}
                       whileHover={{ scale: 1.2 }}

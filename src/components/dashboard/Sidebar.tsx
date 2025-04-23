@@ -44,7 +44,7 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="fixed left-0 top-0 z-30 h-full w-60 bg-card p-4 transition-all">
+    <aside className="fixed left-0 top-0 z-30 h-full w-60 bg-background p-4 transition-all">
       <div className="mb-8">
         <div className="flex items-center gap-2 text-2xl font-bold text-primary">
           <Logo />

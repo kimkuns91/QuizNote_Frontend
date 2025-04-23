@@ -1,4 +1,4 @@
-import { getQuiz, getQuizzes, submitQuizResult } from '@/actions/quizActions';
+import { getQuiz, getQuizResult, getQuizzes, submitQuizResult } from '@/actions/quizActions';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { toast } from 'react-hot-toast';
@@ -9,7 +9,7 @@ export interface IQuizQuestion {
   type: 'multiple-choice';
   points: number;
   order: number;
-  isAnswered?: boolean;
+  isAnswered: boolean;
   options: {
     id: string;
     text: string;
@@ -85,7 +85,7 @@ export function useSubmitQuizResult() {
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['quiz', variables.quizId] });
-      toast.success(`퀴즈가 완료되었습니다! 점수: ${data.score}/${data.totalPoints}`);
+      toast.success('퀴즈가 완료되었습니다!');
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -98,7 +98,7 @@ export function useQuizResult(quizId: string) {
   return useQuery({
     queryKey: ['quiz-result', quizId],
     queryFn: async () => {
-      const result = await getQuiz(quizId);
+      const result = await getQuizResult(quizId);
       if (!result.success) {
         throw new Error(result.error);
       }

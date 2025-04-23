@@ -3,6 +3,7 @@
 import { Lecture } from "@/hooks/useLecture";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
 
 // Lecture 생성을 위한 인터페이스
 interface LectureCreationOptions {
@@ -420,5 +421,52 @@ export async function getTaskStatus(taskId: string) {
       success: false,
       error: error instanceof Error ? error.message : '태스크 상태 확인 중 오류가 발생했습니다.',
     };
+  }
+}
+
+/**
+ * 강의를 업데이트하는 함수
+ */
+export async function updateLecture(lectureId: string, data: {
+  title?: string;
+  description?: string;
+}) {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false, error: '로그인이 필요합니다.' };
+
+  try {
+    // 강의 소유자 확인
+    const lecture = await prisma.lecture.findUnique({
+      where: {
+        id: lectureId,
+        userId: session.user.id,
+      },
+    });
+
+    if (!lecture) {
+      return { success: false, error: '해당 강의를 찾을 수 없거나 수정 권한이 없습니다.' };
+    }
+
+    // 강의 업데이트
+    const updatedLecture = await prisma.lecture.update({
+      where: {
+        id: lectureId,
+      },
+      data: {
+        ...(data.title && { title: data.title }),
+        ...(data.description !== undefined && { description: data.description }),
+      },
+      include: {
+        mediaFile: true,
+      }
+    });
+
+    revalidatePath(`/lectures/${lectureId}`);
+    revalidatePath('/lectures');
+
+    return { success: true, data: updatedLecture };
+  } catch (error) {
+    console.error('강의 업데이트 오류:', error);
+    return { success: false, error: '강의를 업데이트하는 중 오류가 발생했습니다.' };
   }
 } 

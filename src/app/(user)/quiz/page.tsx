@@ -229,13 +229,9 @@ export default function QuizPage() {
             whileHover={{ scale: 1.02 }}
             transition={{ type: "spring", stiffness: 300 }}
           >
-            <p className="text-sm font-medium text-gray-700">평균 점수</p>
+            <p className="text-sm font-medium text-gray-700">미완료 퀴즈</p>
             <p className="text-3xl font-bold text-orange-600">
-              {Math.round(
-                (quizzes?.reduce((acc, q) => acc + (q.score || 0), 0) || 0) /
-                  (quizzes?.length || 1)
-              ) || 0}
-              점
+              {quizzes?.filter(q => !q.questions.every(q => q.isAnswered)).length || 0}개
             </p>
           </motion.div>
         </div>
@@ -283,7 +279,7 @@ export default function QuizPage() {
                 </div>
                 {quiz.score !== undefined && (
                   <div className="flex items-center text-sm">
-                    {quiz.score >= 80 ? (
+                    {quiz.score >= 70 ? (
                       <RiCheckboxCircleLine className="mr-2 h-4 w-4 text-green-500" />
                     ) : (
                       <RiCloseCircleLine className="mr-2 h-4 w-4 text-red-500" />

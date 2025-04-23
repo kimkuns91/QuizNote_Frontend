@@ -9,7 +9,7 @@ import {
   getLectureNotes,
   updateLectureNote,
   updateNoteSection
-} from '@/actions/note';
+} from '@/actions/noteActions';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { toast } from 'react-hot-toast';
@@ -21,6 +21,7 @@ export interface ILectureNote {
   content: string;
   tags: string[];
   isPublic: boolean;
+  isUpdated: boolean;
   createdAt: Date;
   updatedAt: Date;
   userId: string;

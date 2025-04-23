@@ -137,6 +137,7 @@ model LectureNote {
   isPublic    Boolean  @default(false) // 공개 여부
   language    String   @default("ko") // 강의노트 언어
 
+  isUpdated     Boolean  @default(false) // 강의노트 수정 여부
   // 메타데이터
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

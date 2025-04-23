@@ -184,6 +184,7 @@ export async function updateLectureNote(
         ...(data.content && { content: data.content }),
         ...(data.tags && { tags: data.tags }),
         ...(data.isPublic !== undefined && { isPublic: data.isPublic }),
+        isUpdated: true,
       },
     });
     
