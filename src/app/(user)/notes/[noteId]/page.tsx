@@ -7,6 +7,7 @@ import AudioPlayer from '@/components/audio/AudioPlayer';
 import MarkdownPreview from '@/components/MarkdownPreview';
 import { formatDate } from '@/lib/date';
 import { toast } from 'react-hot-toast';
+import { useEffect } from 'react';
 import { useParams } from 'next/navigation'
 import { useRouter } from 'next/navigation';
 
@@ -15,6 +16,19 @@ export default function NoteDetailPage() {
   const router = useRouter();
   const { data: note, isLoading, isError } = useLectureNote(noteId);
   const { mutate: deleteNote, isPending: isDeleting } = useDeleteLectureNote();
+
+  // 디버깅을 위한 useEffect 추가
+  useEffect(() => {
+    if (note) {
+      console.log('Note Data:', note);
+      console.log('Media File:', note.lecture?.mediaFile);
+      if (note.lecture?.mediaFile) {
+        console.log('Media File ID:', note.lecture.mediaFile.id);
+      } else {
+        console.log('미디어 파일이 없습니다.');
+      }
+    }
+  }, [note]);
 
   const handleDelete = () => {
     if (window.confirm('정말로 이 강의노트를 삭제하시겠습니까?')) {
@@ -139,8 +153,9 @@ export default function NoteDetailPage() {
         {note.lecture?.mediaFile && (
           <div className="mb-8">
             <AudioPlayer 
-              audioFileId={note.lecture.mediaFile.id} 
-              fileName={note.lecture.mediaFile.fileName} 
+              audioId={note.lecture.mediaFile.id}
+              fileName={note.lecture.mediaFile.fileName}
+              showDebugInfo={process.env.NODE_ENV === 'development'}
             />
           </div>
         )}

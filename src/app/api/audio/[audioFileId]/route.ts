@@ -29,17 +29,35 @@ export async function GET(
 
     if (!mediaFile) {
       console.error(`파일을 찾을 수 없음: ${audioFileId}`);
-      return NextResponse.json(
-        { error: '파일을 찾을 수 없습니다.' },
-        { status: 404 }
+      // CORS 헤더 추가
+      return new NextResponse(
+        JSON.stringify({ error: '파일을 찾을 수 없습니다.', id: audioFileId }), 
+        { 
+          status: 404,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+          }
+        }
       );
     }
 
     if (!mediaFile.s3Key) {
       console.error(`S3 키가 없음: ${audioFileId}`);
-      return NextResponse.json(
-        { error: 'S3 키가 없습니다.' },
-        { status: 400 }
+      // CORS 헤더 추가
+      return new NextResponse(
+        JSON.stringify({ error: 'S3 키가 없습니다.', id: audioFileId }), 
+        { 
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+          }
+        }
       );
     }
 
@@ -176,7 +194,7 @@ export async function GET(
         'Accept-Ranges': 'bytes',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, OPTIONS, HEAD',
-        'Access-Control-Allow-Headers': 'Content-Type, Range, Origin',
+        'Access-Control-Allow-Headers': 'Content-Type, Range, Origin, Authorization',
         'Cache-Control': 'public, max-age=3600',
       };
       
@@ -188,16 +206,34 @@ export async function GET(
     } catch (s3Error: unknown) {
       console.error('S3 파일 다운로드 오류:', s3Error);
       const errorMessage = s3Error instanceof Error ? s3Error.message : '알 수 없는 오류';
-      return NextResponse.json(
-        { error: `S3에서 파일을 가져오는 중 오류가 발생했습니다: ${errorMessage}` },
-        { status: 500 }
+      // CORS 헤더 추가
+      return new NextResponse(
+        JSON.stringify({ error: `S3에서 파일을 가져오는 중 오류가 발생했습니다: ${errorMessage}` }), 
+        { 
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+          }
+        }
       );
     }
   } catch (error) {
     console.error('오디오 스트리밍 오류:', error);
-    return NextResponse.json(
-      { error: '오디오 파일 스트리밍 중 오류가 발생했습니다.' },
-      { status: 500 }
+    // CORS 헤더 추가
+    return new NextResponse(
+      JSON.stringify({ error: '오디오 파일 스트리밍 중 오류가 발생했습니다.' }), 
+      { 
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+        }
+      }
     );
   }
 }
@@ -229,4 +265,17 @@ export async function PATCH(
       { status: 500 }
     );
   }
+}
+
+// OPTIONS 메서드 핸들러 추가 - CORS 프리플라이트 요청을 위한 처리
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, Range',
+      'Access-Control-Max-Age': '86400',
+    },
+  });
 } 
