@@ -11,16 +11,17 @@ interface AudioPlayerProps {
   audioId: string;
   fileName?: string;
   className?: string;
-  showDebugInfo?: boolean;
 }
 
-export default function AudioPlayer({ audioId, fileName, className = '', showDebugInfo = false }: AudioPlayerProps) {
+export default function AudioPlayer({ audioId, fileName, className = '' }: AudioPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [loadAttempts, setLoadAttempts] = useState(0);
   
   // 오디오 스토어 연결
   const { volume, isMuted, playbackRate, actions } = useAudioStore();
@@ -30,12 +31,69 @@ export default function AudioPlayer({ audioId, fileName, className = '', showDeb
   const progressBarRef = useRef<HTMLDivElement>(null);
   
   // 오디오 URL 생성 (캐시 방지를 위한 타임스탬프 포함)
-  const audioUrl = `/api/audio/${audioId}?t=${Date.now()}`;
+  const apiUrl = `/api/audio/${audioId}?t=${Date.now()}`;
   
-  // 오디오 초기화 및 이벤트 리스너 설정
+  // API에서 오디오 데이터 가져오기
+  useEffect(() => {
+    if (!audioId) return;
+    
+    const fetchAudio = async () => {
+      try {
+        setIsLoading(true);
+        setHasError(false);
+        console.log(`오디오 데이터 요청 시작: ${apiUrl} (시도 ${loadAttempts + 1})`);
+        
+        const response = await fetch(apiUrl);
+        
+        if (!response.ok) {
+          throw new Error(`API 응답 오류: ${response.status} ${response.statusText}`);
+        }
+        
+        // 응답 헤더 확인
+        const contentType = response.headers.get('content-type');
+        console.log(`응답 콘텐츠 타입: ${contentType}`);
+        
+        // 응답 본문을 Blob으로 변환
+        const blob = await response.blob();
+        console.log(`오디오 데이터 로드 완료: ${blob.size} 바이트, 타입: ${blob.type}`);
+        
+        // 이전 Blob URL 정리
+        if (blobUrl) {
+          URL.revokeObjectURL(blobUrl);
+        }
+        
+        // 새 Blob URL 생성
+        const url = URL.createObjectURL(blob);
+        setBlobUrl(url);
+        
+        console.log(`Blob URL 생성됨: ${url}`);
+        
+        // 로딩 성공 처리는 오디오 요소의 'loadedmetadata' 이벤트에서 처리
+      } catch (error) {
+        console.error('오디오 데이터 로드 오류:', error);
+        setIsLoading(false);
+        setHasError(true);
+        setErrorMessage(`오디오 파일을 로드할 수 없습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
+        toast.error('오디오 파일을 로드할 수 없습니다');
+      }
+    };
+    
+    fetchAudio();
+    
+    // 클린업 함수
+    return () => {
+      if (blobUrl) {
+        URL.revokeObjectURL(blobUrl);
+      }
+    };
+  }, [audioId, loadAttempts]);
+  
+  // 오디오 요소 설정 및 이벤트 리스너
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio) return;
+    if (!audio || !blobUrl) return;
+    
+    console.log('오디오 요소 설정 시작');
     
     // 스토어 값으로 초기 설정
     audio.volume = volume;
@@ -57,6 +115,11 @@ export default function AudioPlayer({ audioId, fileName, className = '', showDeb
       setIsLoading(false);
     };
     
+    const handleCanPlay = () => {
+      console.log('오디오 재생 가능 상태');
+      setIsLoading(false);
+    };
+    
     const handleTimeUpdate = () => {
       setCurrentTime(audio.currentTime);
     };
@@ -67,48 +130,66 @@ export default function AudioPlayer({ audioId, fileName, className = '', showDeb
       audio.currentTime = 0;
     };
     
-    const handleError = (e: ErrorEvent) => {
-      console.error('오디오 로드 오류:', e);
+    const handleError = (e: Event) => {
+      const target = e.target as HTMLAudioElement;
+      console.error('오디오 요소 오류:', e, target.error);
       setIsLoading(false);
       setHasError(true);
-      setErrorMessage('오디오 파일을 로드할 수 없습니다.');
-      toast.error('오디오 파일을 로드할 수 없습니다');
+      
+      let errorMsg = '오디오 파일을 로드할 수 없습니다';
+      if (target.error) {
+        switch (target.error.code) {
+          case 1: errorMsg = '재생이 중단되었습니다'; break;
+          case 2: errorMsg = '네트워크 오류가 발생했습니다'; break;
+          case 3: errorMsg = '오디오를 디코딩할 수 없습니다'; break;
+          case 4: errorMsg = '미디어가 지원되지 않습니다'; break;
+          default: errorMsg = `오류가 발생했습니다 (코드: ${target.error.code})`; break;
+        }
+      }
+      
+      setErrorMessage(errorMsg);
+      toast.error(errorMsg);
     };
     
     const handlePlay = () => {
+      console.log('재생 시작');
       setIsPlaying(true);
     };
     
     const handlePause = () => {
+      console.log('일시 정지');
       setIsPlaying(false);
     };
     
     // 이벤트 리스너 등록
     audio.addEventListener('loadstart', handleLoadStart);
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('canplay', handleCanPlay);
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('ended', handleEnded);
-    audio.addEventListener('error', handleError as EventListener);
+    audio.addEventListener('error', handleError);
     audio.addEventListener('play', handlePlay);
     audio.addEventListener('pause', handlePause);
     
-    // 상태 초기화
-    setIsLoading(true);
-    setHasError(false);
+    // 로드 시작
+    audio.src = blobUrl;
+    audio.load();
     
     // 클린업 함수
     return () => {
       audio.removeEventListener('loadstart', handleLoadStart);
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('canplay', handleCanPlay);
       audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('ended', handleEnded);
-      audio.removeEventListener('error', handleError as EventListener);
+      audio.removeEventListener('error', handleError);
       audio.removeEventListener('play', handlePlay);
       audio.removeEventListener('pause', handlePause);
       
       audio.pause();
+      audio.src = '';
     };
-  }, [audioId, volume, isMuted, playbackRate]);
+  }, [blobUrl, volume, isMuted, playbackRate]);
   
   // 스토어 값이 변경될 때 오디오 요소 업데이트
   useEffect(() => {
@@ -171,13 +252,7 @@ export default function AudioPlayer({ audioId, fileName, className = '', showDeb
   
   // 재시도 처리
   const handleRetry = () => {
-    if (!audioRef.current) return;
-    
-    // 오디오 요소 리셋 및 다시 로드
-    audioRef.current.pause();
-    audioRef.current.load();
-    setIsLoading(true);
-    setHasError(false);
+    setLoadAttempts(prev => prev + 1);
   };
   
   const playbackRates = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
@@ -187,7 +262,6 @@ export default function AudioPlayer({ audioId, fileName, className = '', showDeb
       {/* 오디오 요소 (숨김) */}
       <audio 
         ref={audioRef}
-        src={audioUrl}
         preload="metadata"
         className="hidden"
       />
@@ -306,16 +380,6 @@ export default function AudioPlayer({ audioId, fileName, className = '', showDeb
             </div>
           </div>
         </>
-      )}
-      
-      {/* 디버깅 정보 (디버그 모드일 때만 표시) */}
-      {showDebugInfo && (
-        <div className="mt-4 border-t border-gray-100 pt-3 text-xs text-gray-500">
-          <p>오디오 ID: {audioId}</p>
-          <p>URL: {audioUrl}</p>
-          <p>상태: {isLoading ? '로딩 중' : hasError ? '오류' : '준비됨'}</p>
-          <p>볼륨: {volume.toFixed(2)}, 음소거: {isMuted ? '예' : '아니오'}, 재생 속도: {playbackRate}x</p>
-        </div>
       )}
     </div>
   );

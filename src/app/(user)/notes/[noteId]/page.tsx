@@ -155,7 +155,6 @@ export default function NoteDetailPage() {
             <AudioPlayer 
               audioId={note.lecture.mediaFile.id}
               fileName={note.lecture.mediaFile.fileName}
-              showDebugInfo={process.env.NODE_ENV === 'development'}
             />
           </div>
         )}
