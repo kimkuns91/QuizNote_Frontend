@@ -128,7 +128,7 @@ export async function getLectureStatus(lectureId: string) {
 /**
  * 강의 목록을 조회하는 함수
  */
-export async function getLectures(page = 1, limit = 12): Promise<{ success: true; data: Lecture[]; hasMore: boolean } | { success: false; error: string }> {
+export async function getLectures(page = 1, limit = 24): Promise<{ success: true; data: Lecture[]; hasMore: boolean } | { success: false; error: string }> {
   const session = await auth();
   if (!session?.user?.id) return { success: false, error: '로그인이 필요합니다.' };
 

@@ -14,7 +14,7 @@ export default function robots(): MetadataRoute.Robots {
         crawlDelay: 2,
       },
     ],
-    sitemap: "https://quiz-note-frontend.vercel.app/sitemap.xml",
-    host: "https://quiz-note-frontend.vercel.app",
+    sitemap: "https://www.quiznote.co.kr/sitemap.xml",
+    host: "https://www.quiznote.co.kr",
   };
 }
