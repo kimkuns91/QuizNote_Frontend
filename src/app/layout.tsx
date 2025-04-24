@@ -38,8 +38,71 @@ const sbAgro = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "QuizNote",
+  title: {
+    default: "QuizNote",
+    template: "%s | QuizNote",
+  },
   description: "QuizNote는 강의 노트를 쉽게 만들어주는 서비스입니다.",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+  ),
+  keywords: [
+    "퀴즈노트",
+    "강의 노트",
+    "학습 보조",
+    "노트 정리",
+    "학습 관리",
+    "강의 자료",
+    "퀴즈",
+  ],
+  authors: [
+    { name: "QuizNote" },
+  ],
+  creator: "QuizNote",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  openGraph: {
+    type: "website",
+    locale: "ko_KR",
+    url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+    siteName: "QuizNote",
+    title: "QuizNote | 강의 노트를 쉽게 만들어주는 서비스",
+    description: "QuizNote는 강의 노트를 쉽게 만들어주는 서비스입니다.",
+    images: [
+      {
+        url: "/images/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "QuizNote",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "QuizNote | 강의 노트를 쉽게 만들어주는 서비스",
+    description: "QuizNote는 강의 노트를 쉽게 만들어주는 서비스입니다.",
+    images: ["/images/og-image.jpg"],
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
+  verification: {
+    google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION || "9TL8BLwbPBcob6zkBH7e6YcEa3HjSB8-SUBNTskG1a4",
+    other: {
+      "naver-site-verification":
+        process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION || "",
+    },
+  },
 };
 
 export default async function RootLayout({
