@@ -86,6 +86,7 @@ export default function AudioPlayer({ audioId, fileName, className = '' }: Audio
         URL.revokeObjectURL(blobUrl);
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audioId, loadAttempts]);
   
   // 오디오 요소 설정 및 이벤트 리스너
