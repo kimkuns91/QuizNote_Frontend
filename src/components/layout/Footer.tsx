@@ -45,10 +45,10 @@ export default function Footer() {
             <h3 className="mb-4 text-lg font-semibold text-gray-900">서비스</h3>
             <ul className="space-y-3">
               {[
-                { name: '학습 요약', href: '/summary' },
-                { name: '요금제', href: '/pricing' },
-                { name: '자주 묻는 질문', href: '/faq' },
-                { name: '이용 가이드', href: '/guide' },
+                { name: '학습 요약', href: '/' },
+                { name: '요금제', href: '/' },
+                { name: '자주 묻는 질문', href: '/' },
+                { name: '이용 가이드', href: '/' },
               ].map(item => (
                 <li key={item.name}>
                   <Link
@@ -67,10 +67,10 @@ export default function Footer() {
             <h3 className="mb-4 text-lg font-semibold text-gray-900">학습 리소스</h3>
             <ul className="space-y-3">
               {[
-                { name: '학습 자료', href: '/resources' },
-                { name: '커뮤니티', href: '/community' },
-                { name: '퀴즈 라이브러리', href: '/quizzes' },
-                { name: '블로그', href: '/blog' },
+                { name: '학습 자료', href: '/' },
+                { name: '커뮤니티', href: '/' },
+                { name: '퀴즈 라이브러리', href: '/' },
+                { name: '블로그', href: '/' },
               ].map(item => (
                 <li key={item.name}>
                   <Link
