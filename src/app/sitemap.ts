@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://quiz-note-frontend.vercel.app";
+  const baseUrl = "https://www.quiznote.co.kr";
 
   // 정적 라우트
   const staticRoutes = [

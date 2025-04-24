@@ -57,6 +57,18 @@ export interface Lecture {
   } | null;
 }
 
+// InfiniteQuery 데이터 구조에 대한 타입 정의
+interface LecturePageData {
+  success: boolean;
+  data: Lecture[];
+  hasMore: boolean;
+}
+
+interface LectureInfiniteData {
+  pages: LecturePageData[];
+  pageParams: number[];
+}
+
 // 강의 목록 조회 (인피니트 스크롤)
 export function useLectures() {
   return useInfiniteQuery({
@@ -110,12 +122,20 @@ export function useDeleteLecture() {
       await queryClient.cancelQueries({ queryKey: ['lectures'] });
       
       // 이전 데이터 저장
-      const previousLectures = queryClient.getQueryData(['lectures']);
+      const previousLectures = queryClient.getQueryData<LectureInfiniteData>(['lectures']);
       
-      // 낙관적 업데이트
-      queryClient.setQueryData(['lectures'], (old: Lecture[] | undefined) => {
-        if (!old) return [];
-        return old.filter(lecture => lecture.id !== lectureId);
+      // 낙관적 업데이트 (인피니트 쿼리 데이터 구조에 맞게 수정)
+      queryClient.setQueryData<LectureInfiniteData>(['lectures'], (old) => {
+        if (!old) return { pages: [], pageParams: [] };
+        
+        // 각 페이지 내에서 해당 강의 필터링
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            data: page.data.filter((lecture: Lecture) => lecture.id !== lectureId)
+          }))
+        };
       });
       
       return { previousLectures };
