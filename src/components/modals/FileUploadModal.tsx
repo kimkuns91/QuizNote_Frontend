@@ -49,8 +49,8 @@ const FileUploadModal = () => {
   const [uploadedFileInfo, setUploadedFileInfo] = useState<UploadedFileInfo | null>(null);
   
   // 설정 상태 관리
-  const [selectedModel, setSelectedModel] = useState('기본 모델');
-  const [selectedLanguage, setSelectedLanguage] = useState('한국어');
+  const [selectedModel, setSelectedModel] = useState('whisper-small');
+  const [selectedLanguage, setSelectedLanguage] = useState('ko');
   const [useTranscriptEditing, setUseTranscriptEditing] = useState(false);
   const [isCreatingLecture, setIsCreatingLecture] = useState(false);
   
