@@ -79,7 +79,7 @@ export const metadata: Metadata = {
     description: "QuizNote는 강의 노트를 쉽게 만들어주는 서비스입니다.",
     images: [
       {
-        url: "/images/og-image.jpg",
+        url: "/images/og-image.png",
         width: 1200,
         height: 630,
         alt: "QuizNote",
@@ -90,7 +90,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "QuizNote | 강의 노트를 쉽게 만들어주는 서비스",
     description: "QuizNote는 강의 노트를 쉽게 만들어주는 서비스입니다.",
-    images: ["/images/og-image.jpg"],
+    images: ["/images/og-image.png"],
   },
   icons: {
     icon: "/favicon.ico",

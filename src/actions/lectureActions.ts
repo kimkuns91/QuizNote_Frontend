@@ -43,8 +43,8 @@ export async function createLecture(options: LectureCreationOptions) {
     console.log('Lecture 생성 완료:', newLecture.id);
 
     // FastAPI 서버에 비동기 변환 요청
-    const fastApiUrl = process.env.FASTAPI_URL || 'http://localhost:8000';
-    console.log('FastAPI 요청 URL:', `${fastApiUrl}/api/transcription`);
+    const fastApiUrl = process.env.FASTAPI_URL || 'http://localhost:8000/api/v1';
+    console.log('FastAPI 요청 URL:', `${fastApiUrl}/transcription`);
     
     const requestBody = {
       lecture_id: newLecture.id,
@@ -60,7 +60,7 @@ export async function createLecture(options: LectureCreationOptions) {
     
     console.log('FastAPI 요청 본문:', requestBody);
     
-    const response = await fetch(`${fastApiUrl}/api/transcription`, {
+    const response = await fetch(`${fastApiUrl}/transcription`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
